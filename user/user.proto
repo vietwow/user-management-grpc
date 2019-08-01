@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package user;
+
+// User management service definition
+service UserService {
+    rpc ListUser(ListUserRequest) returns (ListUserResponse) {}
+    rpc GetUser(GetUserRequest) returns (GetUserResponse) {}
+    rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
+    rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse) {}
+}
+
+//
+message User {
+    int32  userId   = 1;
+    string username = 2;
+    string email    = 3;
+    string password = 4;
+    string phone    = 5;
+}
+
+//
+message ListUserRequest {}
+
+message ListUserResponse {
+    repeated User users = 1;
+}
+
+//
+message GetUserRequest {
+    string username = 1;
+}
+
+message GetUserResponse {
+    User user = 1;
+}
+
+//
+message CreateUserRequest {
+    User user = 1;
+}
+
+message CreateUserResponse {
+    int32 userId  = 1;
+    bool success  = 2;
+}
+
+//
+message DeleteUserRequest {
+    string username = 1;
+}
+
+message DeleteUserResponse {
+    int32 userId = 1;
+    bool success  = 2;
+}
