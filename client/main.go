@@ -1,100 +1,105 @@
 package main
 
 import (
-	"context"
-	"flag"
-	"log"
-	"time"
+    "context"
+    "log"
+    "time"
 
-	"github.com/golang/protobuf/ptypes"
-	"google.golang.org/grpc"
+    "gopkg.in/alecthomas/kingpin.v2"
 
-	pb "github.com/vietwow/user-management-grpc/user"
+    "google.golang.org/grpc"
+
+    pb "github.com/vietwow/user-management-grpc/user"
+)
+
+var (
+    address  = kingpin.Flag("server", "gRPC server in format host:port").Envar("SERVER").String()
+    version  = "0.0.0"
+
+    verbose  = kingpin.Flag("verbose", "Verbose mode.").Short('v').Bool()
 )
 
 func main() {
-	// get configuration
-	address := flag.String("server", "", "gRPC server in format host:port")
-	flag.Parse()
+    // get configuration
+    kingpin.Version(version)
+    kingpin.Parse()
 
-	// Set up a connection to the server.
-	conn, err := grpc.Dial(*address, grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("did not connect: %v", err)
-	}
-	defer conn.Close()
+    // Set up a connection to the server.
+    conn, err := grpc.Dial(*address, grpc.WithInsecure())
+    if err != nil {
+        log.Fatalf("did not connect: %v", err)
+    }
+    defer conn.Close()
 
-	c := pb.NewToDoServiceClient(conn)
+    c := pb.NewUserServiceClient(conn)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
 
-	t := time.Now().In(time.UTC)
-	reminder, _ := ptypes.TimestampProto(t)
-	pfx := t.Format(time.RFC3339Nano)
 
-	// Call Create
-	req1 := pb.CreateRequest{
-		Api: apiVersion,
-		ToDo: &pb.ToDo{
-			Title:       "title (" + pfx + ")",
-			Description: "description (" + pfx + ")",
-			Reminder:    reminder,
-		},
-	}
-	res1, err := c.Create(ctx, &req1)
-	if err != nil {
-		log.Fatalf("Create failed: %v", err)
-	}
-	log.Printf("Create result: <%+v>\n\n", res1)
+    // Call Create
+    username := "vietwow"
+    email    := "vietwow@gmail.com"
+    password := "newhacker"
+    phone    := "123456"
 
-	id := res1.Id
+    req1 := pb.CreateUserRequest{
+        User: &pb.User{
+            Username: "Username (" + username + ")",
+            Email:    "Email (" + email + ")",
+            Password: "Password (" + password + ")",
+            Phone:    "Phone (" + phone + ")",
+        },
+    }
+    res1, err := c.CreateUser(ctx, &req1)
+    if err != nil {
+        log.Fatalf("CreateUser failed: %v", err)
+    }
+    log.Printf("CreateUser result: <%+v>\n\n", res1)
 
-	// Read
-	req2 := pb.ReadRequest{
-		Api: apiVersion,
-		Id:  id,
-	}
-	res2, err := c.Read(ctx, &req2)
-	if err != nil {
-		log.Fatalf("Read failed: %v", err)
-	}
-	log.Printf("Read result: <%+v>\n\n", res2)
+    // Call GetUser
+    id := res1.UserId
 
-	// Update
-	req3 := pb.UpdateRequest{
-		Api: apiVersion,
-		ToDo: &pb.ToDo{
-			Id:          res2.ToDo.Id,
-			Title:       res2.ToDo.Title,
-			Description: res2.ToDo.Description + " + updated",
-			Reminder:    res2.ToDo.Reminder,
-		},
-	}
-	res3, err := c.Update(ctx, &req3)
-	if err != nil {
-		log.Fatalf("Update failed: %v", err)
-	}
-	log.Printf("Update result: <%+v>\n\n", res3)
+    req2 := pb.GetUserRequest{
+        UserId: id,
+    }
+    res2, err := c.GetUser(ctx, &req2)
+    if err != nil {
+        log.Fatalf("GetUser failed: %v", err)
+    }
+    log.Printf("GetUser result: <%+v>\n\n", res2)
 
-	// Call ReadAll
-	req4 := pb.ReadAllRequest{
-		Api: apiVersion,
-	}
-	res4, err := c.ReadAll(ctx, &req4)
-	if err != nil {
-		log.Fatalf("ReadAll failed: %v", err)
-	}
-	log.Printf("ReadAll result: <%+v>\n\n", res4)
+    // Call UpdateUser
+    req3 := pb.UpdateUserRequest{
+        User: &pb.User{
+            UserId:   res2.User.UserId,
+            Username: res2.User.Username,
+            Email:    res2.User.Email,
+            Password: res2.User.Password,
+            Phone:    res2.User.Phone,
+        },
+    }
+    res3, err := c.UpdateUser(ctx, &req3)
+    if err != nil {
+        log.Fatalf("UpdateUser failed: %v", err)
+    }
+    log.Printf("UpdateUser result: <%+v>\n\n", res3)
 
-	// Delete
-	req5 := pb.DeleteRequest{
-		Api: apiVersion,
-		Id:  id,
-	}
-	res5, err := c.Delete(ctx, &req5)
-	if err != nil {
-		log.Fatalf("Delete failed: %v", err)
-	}
-	log.Printf("Delete result: <%+v>\n\n", res5)
+    // Call ListUser
+    req4 := pb.ListUserRequest{}
+    res4, err := c.ListUser(ctx, &req4)
+    if err != nil {
+        log.Fatalf("ListUser failed: %v", err)
+    }
+    log.Printf("ListUser result: <%+v>\n\n", res4)
+
+    // Call DeleteUser
+    req5 := pb.DeleteUserRequest{
+        UserId:  id,
+    }
+    res5, err := c.DeleteUser(ctx, &req5)
+    if err != nil {
+        log.Fatalf("DeleteUser failed: %v", err)
+    }
+    log.Printf("DeleteUser result: <%+v>\n\n", res5)
 }

@@ -48,10 +48,7 @@ message CreateUserResponse {
 
 //
 message UpdateUserRequest {
-    int64  userId   = 1;
-    string email    = 2;
-    string password = 3;
-    string phone    = 4;
+    User user = 1;
 }
 
 message UpdateUserResponse {

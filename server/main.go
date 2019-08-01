@@ -137,7 +137,7 @@ func(s *UserService) GetUser(ctx context.Context, in *pb.GetUserRequest) (*pb.Ge
 }
 
 func(s *UserService) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
-    log.Printf("Received: %v", in.UserId)
+    log.Printf("Received: %v", in.User.UserId)
 
     // get SQL connection from pool
     c, err := s.connect(ctx)
@@ -148,7 +148,7 @@ func(s *UserService) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (
 
     // update User
     res, err := c.ExecContext(ctx, "UPDATE User SET `Email`=?, `Password`=?, `Phone`=? WHERE `ID`=?",
-        in.Email, in.Password, in.Phone, in.UserId)
+        in.User.Email, in.User.Password, in.User.Phone, in.User.UserId)
     if err != nil {
         return nil, status.Error(codes.Unknown, "failed to update User-> "+err.Error())
     }
@@ -160,10 +160,10 @@ func(s *UserService) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (
 
     if rows == 0 {
         return nil, status.Error(codes.NotFound, fmt.Sprintf("User with ID='%d' is not found",
-            in.UserId))
+            in.User.UserId))
     }
 
-    return &pb.UpdateUserResponse{UserId: in.UserId, Success: true}, nil
+    return &pb.UpdateUserResponse{UserId: in.User.UserId, Success: true}, nil
 }
 
 func(s *UserService) DeleteUser(ctx context.Context, in *pb.DeleteUserRequest) (*pb.DeleteUserResponse, error) {
