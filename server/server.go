@@ -4,8 +4,8 @@ import (
     "fmt"
     "net"
     "log"
-    "os"
-    "os/signal"
+    // "os"
+    // "os/signal"
     "io/ioutil"
     "bytes"
     "sync"
@@ -267,10 +267,10 @@ func StartServer(wg *sync.WaitGroup) {
     // get configuration
     initConfig()
 
-    DatastoreDBUser     := viper.Get("DatastoreDBUser")
-    DatastoreDBPassword := viper.Get("DatastoreDBPassword")
-    DatastoreDBHost     := viper.Get("DatastoreDBHost")
-    DatastoreDBSchema   := viper.Get("DatastoreDBSchema")
+    DatastoreDBUser     := viper.GetString("DatastoreDBUser")
+    DatastoreDBPassword := viper.GetString("DatastoreDBPassword")
+    DatastoreDBHost     := viper.GetString("DatastoreDBHost")
+    DatastoreDBSchema   := viper.GetString("DatastoreDBSchema")
 
 
     //
@@ -306,20 +306,20 @@ func StartServer(wg *sync.WaitGroup) {
     pb.RegisterUserServiceServer(s, user_service)
 
     // graceful shutdown
-    ctx := context.Background()
+    // ctx := context.Background()
 
-    c := make(chan os.Signal, 1)
-    signal.Notify(c, os.Interrupt)
-    go func() {
-        for range c {
-            // sig is a ^C, handle it
-            log.Println("shutting down gRPC server...")
+    // c := make(chan os.Signal, 1)
+    // signal.Notify(c, os.Interrupt)
+    // go func() {
+    //     for range c {
+    //         // sig is a ^C, handle it
+    //         log.Println("shutting down gRPC server...")
 
-            s.GracefulStop()
+    //         s.GracefulStop()
 
-            <-ctx.Done()
-        }
-    }()
+    //         <-ctx.Done()
+    //     }
+    // }()
 
     // start gRPC server
     log.Println("starting gRPC server...")
