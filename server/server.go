@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
     "fmt"
@@ -6,8 +6,11 @@ import (
     "log"
     "os"
     "os/signal"
+    "io/ioutil"
+    "bytes"
+    "sync"
 
-    "gopkg.in/alecthomas/kingpin.v2"
+    "github.com/spf13/viper"
 
     "database/sql"
 
@@ -67,7 +70,7 @@ func(s *UserService) ListUser(ctx context.Context, in *pb.ListUserRequest) (*pb.
         return nil, status.Error(codes.Unknown, "failed to retrieve data from User-> "+err.Error())
     }
 
-    return &pb.ListUserResponse{Users: list}, nil
+    return &pb.ListUserResponse{Users: list, Success: true}, nil
 }
 
 func(s *UserService) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
@@ -201,20 +204,73 @@ const (
     port = ":50051"
 )
 
-var (
-    DatastoreDBHost     = kingpin.Flag("db-host", "Database host").Envar("DB_HOST").String()
-    DatastoreDBUser     = kingpin.Flag("db-user", "Database user").Envar("DB_USER").Default("root").String()
-    DatastoreDBPassword = kingpin.Flag("db-password", "Database password").Envar("DB_PASSWORD").Default("newhacker").String()
-    DatastoreDBSchema   = kingpin.Flag("db-schema", "Database schema").Envar("DB_SCHEMA").Default("").String()
-    version             = "0.0.0"
+// default config in buffer
 
-    verbose  = kingpin.Flag("verbose", "Verbose mode.").Short('v').Bool()
-)
+// toml
+// var configDefault = []byte(`
+// [database]
+//     hostname = "localhost"
+//     username = "root"
+//     password = "khongbiet"
+// `)
 
-func main() {
+// yaml
+// var yamlExample = []byte(`
+// Hacker: true
+// name: steve
+// hobbies:
+// - skateboarding
+// - snowboarding
+// - go
+// clothing:
+//   jacket: leather
+//   trousers: denim
+// age: 35
+// eyes : brown
+// beard: true
+// `)
+
+func initConfig() error {
+    // log.Println("Loading config...")
+    viper.SetConfigType("yaml")
+    // viper.SetDefault("proxyList", "/etc/proxy.list")
+    // viper.SetDefault("check", map[string]interface{}{
+    //     "url":      "http://ya.ru",
+    //     "string":   "yandex",
+    //     "interval": "60m",
+    //     "timeout":  "5s",
+    // })
+    viper.SetDefault("DatastoreDBUser", "root")
+    viper.SetDefault("DatastoreDBPassword", "newhacker")
+    viper.SetDefault("DatastoreDBHost", "localhost:3306")
+    viper.SetDefault("DatastoreDBSchema", "grab")
+
+    configFile := "config.yaml"
+
+    file, err := ioutil.ReadFile(configFile)
+    if err != nil {
+        return err
+    }
+
+    err = viper.ReadConfig(bytes.NewReader(file))
+    if err != nil {
+        return err
+    }
+
+    return nil
+}
+
+func StartServer(wg *sync.WaitGroup) {
+    // Call Done() using defer as it's be easiest way to guarantee it's called at every exit
+    defer wg.Done()
+
     // get configuration
-    kingpin.Version(version)
-    kingpin.Parse()
+    initConfig()
+
+    DatastoreDBUser     := viper.Get("DatastoreDBUser")
+    DatastoreDBPassword := viper.Get("DatastoreDBPassword")
+    DatastoreDBHost     := viper.Get("DatastoreDBHost")
+    DatastoreDBSchema   := viper.Get("DatastoreDBSchema")
 
 
     //
@@ -229,10 +285,10 @@ func main() {
 	param := "parseTime=true"
 
     dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?%s",
-        *DatastoreDBUser,
-        *DatastoreDBPassword,
-        *DatastoreDBHost,
-        *DatastoreDBSchema,
+        DatastoreDBUser,
+        DatastoreDBPassword,
+        DatastoreDBHost,
+        DatastoreDBSchema,
         param)
     db, err := sql.Open("mysql", dsn)
     if err != nil {

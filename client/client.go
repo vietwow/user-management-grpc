@@ -1,31 +1,58 @@
-package main
+package client
 
 import (
+    // "fmt"
     "context"
     "log"
     "time"
+    "io/ioutil"
+    "bytes"
+    "sync"
 
-    "gopkg.in/alecthomas/kingpin.v2"
+    "github.com/spf13/viper"
 
     "google.golang.org/grpc"
 
     pb "github.com/vietwow/user-management-grpc/user"
 )
 
-var (
-    address  = kingpin.Flag("server", "gRPC server in format host:port").Envar("SERVER").String()
-    version  = "0.0.0"
+func initConfig() error {
+    // log.Println("Loading config...")
+    viper.SetConfigType("yaml")
+    // viper.SetDefault("proxyList", "/etc/proxy.list")
+    // viper.SetDefault("check", map[string]interface{}{
+    //     "url":      "http://ya.ru",
+    //     "string":   "yandex",
+    //     "interval": "60m",
+    //     "timeout":  "5s",
+    // })
+    viper.SetDefault("SERVER", "localhost:50051")
 
-    verbose  = kingpin.Flag("verbose", "Verbose mode.").Short('v').Bool()
-)
+    configFile := "config.yaml"
 
-func main() {
+    file, err := ioutil.ReadFile(configFile)
+    if err != nil {
+        return err
+    }
+
+    err = viper.ReadConfig(bytes.NewReader(file))
+    if err != nil {
+        return err
+    }
+
+    return nil
+}
+
+func StartClient(wg *sync.WaitGroup) {
+    // Call Done() using defer as it's be easiest way to guarantee it's called at every exit
+    defer wg.Done()
+
     // get configuration
-    kingpin.Version(version)
-    kingpin.Parse()
+    initConfig()
+    address := viper.GetString("SERVER")
 
     // Set up a connection to the server.
-    conn, err := grpc.Dial(*address, grpc.WithInsecure())
+    conn, err := grpc.Dial(address, grpc.WithInsecure())
     if err != nil {
         log.Fatalf("did not connect: %v", err)
     }

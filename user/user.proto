@@ -25,6 +25,7 @@ message ListUserRequest {}
 
 message ListUserResponse {
     repeated User users = 1;
+    bool success = 2;
 }
 
 //

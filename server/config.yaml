@@ -1,0 +1,4 @@
+DatastoreDBUser: root
+DatastoreDBPassword: newhacker
+DatastoreDBHost: localhost:3306
+DatastoreDBSchema: grab
