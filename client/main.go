@@ -45,10 +45,10 @@ func main() {
 
     req1 := pb.CreateUserRequest{
         User: &pb.User{
-            Username: "Username (" + username + ")",
-            Email:    "Email (" + email + ")",
-            Password: "Password (" + password + ")",
-            Phone:    "Phone (" + phone + ")",
+            Username: username,
+            Email:    email,
+            Password: password,
+            Phone:    phone,
         },
     }
     res1, err := c.CreateUser(ctx, &req1)
@@ -74,7 +74,7 @@ func main() {
         User: &pb.User{
             UserId:   res2.User.UserId,
             Username: res2.User.Username,
-            Email:    res2.User.Email,
+            Email:    res2.User.Email + " + updated",
             Password: res2.User.Password,
             Phone:    res2.User.Phone,
         },

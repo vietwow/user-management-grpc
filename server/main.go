@@ -107,7 +107,7 @@ func(s *UserService) GetUser(ctx context.Context, in *pb.GetUserRequest) (*pb.Ge
     defer c.Close()
 
     // query ToDo by ID
-    rows, err := c.QueryContext(ctx, "SELECT `UserId`, `Username`, `Email`, `Password`, `Phone` FROM User WHERE `ID`=?",
+    rows, err := c.QueryContext(ctx, "SELECT `UserId`, `Username`, `Email`, `Password`, `Phone` FROM User WHERE `UserId`=?",
         in.UserId)
     if err != nil {
         return nil, status.Error(codes.Unknown, "failed to select from User-> "+err.Error())
@@ -147,7 +147,7 @@ func(s *UserService) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (
     defer c.Close()
 
     // update User
-    res, err := c.ExecContext(ctx, "UPDATE User SET `Email`=?, `Password`=?, `Phone`=? WHERE `ID`=?",
+    res, err := c.ExecContext(ctx, "UPDATE User SET `Email`=?, `Password`=?, `Phone`=? WHERE `UserId`=?",
         in.User.Email, in.User.Password, in.User.Phone, in.User.UserId)
     if err != nil {
         return nil, status.Error(codes.Unknown, "failed to update User-> "+err.Error())
@@ -177,7 +177,7 @@ func(s *UserService) DeleteUser(ctx context.Context, in *pb.DeleteUserRequest) (
     defer c.Close()
 
     // delete User
-    res, err := c.ExecContext(ctx, "DELETE FROM User WHERE `ID`=?", in.UserId)
+    res, err := c.ExecContext(ctx, "DELETE FROM User WHERE `UserId`=?", in.UserId)
     if err != nil {
         return nil, status.Error(codes.Unknown, "failed to delete User-> "+err.Error())
     }
