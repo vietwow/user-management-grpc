@@ -1,4 +1,4 @@
-package client
+package main
 
 import (
     // "fmt"
@@ -7,7 +7,6 @@ import (
     "time"
     "io/ioutil"
     "bytes"
-    "sync"
 
     "github.com/spf13/viper"
 
@@ -43,10 +42,7 @@ func initConfig() error {
     return nil
 }
 
-func StartClient(wg *sync.WaitGroup) {
-    // Call Done() using defer as it's be easiest way to guarantee it's called at every exit
-    defer wg.Done()
-
+func main() {
     // get configuration
     initConfig()
     address := viper.GetString("SERVER")

@@ -1,14 +1,13 @@
-package server
+package main
 
 import (
     "fmt"
     "net"
     "log"
-    // "os"
-    // "os/signal"
+    "os"
+    "os/signal"
     "io/ioutil"
     "bytes"
-    "sync"
 
     "github.com/spf13/viper"
 
@@ -260,10 +259,7 @@ func initConfig() error {
     return nil
 }
 
-func StartServer(wg *sync.WaitGroup) {
-    // Call Done() using defer as it's be easiest way to guarantee it's called at every exit
-    defer wg.Done()
-
+func main () {
     // get configuration
     initConfig()
 
@@ -306,20 +302,20 @@ func StartServer(wg *sync.WaitGroup) {
     pb.RegisterUserServiceServer(s, user_service)
 
     // graceful shutdown
-    // ctx := context.Background()
+    ctx := context.Background()
 
-    // c := make(chan os.Signal, 1)
-    // signal.Notify(c, os.Interrupt)
-    // go func() {
-    //     for range c {
-    //         // sig is a ^C, handle it
-    //         log.Println("shutting down gRPC server...")
+    c := make(chan os.Signal, 1)
+    signal.Notify(c, os.Interrupt)
+    go func() {
+        for range c {
+            // sig is a ^C, handle it
+            log.Println("shutting down gRPC server...")
 
-    //         s.GracefulStop()
+            s.GracefulStop()
 
-    //         <-ctx.Done()
-    //     }
-    // }()
+            <-ctx.Done()
+        }
+    }()
 
     // start gRPC server
     log.Println("starting gRPC server...")
