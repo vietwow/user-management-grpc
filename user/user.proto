@@ -8,29 +8,29 @@ import "google/api/annotations.proto";
 service UserService {
     rpc ListUser(ListUserRequest) returns (ListUserResponse) {
         option (google.api.http) = {
-          get: "/api/v1/users"
+          get: "/api/v1/users",
         };
     }
     rpc GetUser(GetUserRequest) returns (GetUserResponse) {
         option (google.api.http) = {
-          get: "/api/v1/users/{userId}"
+          get: "/api/v1/users/{userId}",
         };
     }
     rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
         option (google.api.http) = {
-          post: "/api/v1/users"
-          body: "*"
+          post: "/api/v1/users",
+          body: "*",
         };
     }
     rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse) {
         option (google.api.http) = {
-          put: "/api/v1/users/{userId}"
-          body: "*"
+          put: "/api/v1/users/{userId}",
+          body: "*",
         };
     }
     rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse) {
         option (google.api.http) = {
-          delete: "/api/v1/users/{userId}"
+          delete: "/api/v1/users/{userId}",
         };
     }
 }
@@ -45,6 +45,7 @@ message User {
 }
 
 //
+
 message ListUserRequest {}
 
 message ListUserResponse {
@@ -73,8 +74,8 @@ message CreateUserResponse {
 
 //
 message UpdateUserRequest {
-    User user = 1;
-    int64 userId = 2;
+    int64 userId = 1;
+    User user = 2;
 }
 
 message UpdateUserResponse {

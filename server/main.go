@@ -293,13 +293,10 @@ func main () {
     defer db.Close()
 
 
-    //
-    user_service := NewUserService(db)
-
     // Creates a new gRPC server
     s := grpc.NewServer()
     // pb.RegisterUserServiceServer(s, &UserService{})
-    pb.RegisterUserServiceServer(s, user_service)
+    pb.RegisterUserServiceServer(s, NewUserService(db))
 
     // graceful shutdown
     ctx := context.Background()
