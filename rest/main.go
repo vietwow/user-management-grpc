@@ -1,7 +1,9 @@
 /*
-curl -X POST -k http://localhost:8080/v1/example/echo -d '{"name": " world"}
 
-{"message":"Hello  world"}
+curl http://localhost:8080/api/v1/users
+
+curl -X POST -k http://localhost:8080/api/v1/users -d '{"name": " world"}
+
 */
 
 package main
