@@ -24,7 +24,7 @@ service UserService {
     }
     rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse) {
         option (google.api.http) = {
-          put: "/api/v1/users/{userId}",
+          put: "/api/v1/users",
           body: "user",
         };
     }
@@ -74,8 +74,7 @@ message CreateUserResponse {
 
 //
 message UpdateUserRequest {
-    int64 userId = 1;
-    User user = 2;
+    User user = 1;
 }
 
 message UpdateUserResponse {
