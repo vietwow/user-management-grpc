@@ -19,13 +19,13 @@ service UserService {
     rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
         option (google.api.http) = {
           post: "/api/v1/users",
-          body: "*",
+          body: "user",
         };
     }
     rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse) {
         option (google.api.http) = {
           put: "/api/v1/users/{userId}",
-          body: "*",
+          body: "user",
         };
     }
     rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse) {
