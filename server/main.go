@@ -11,10 +11,8 @@ import (
 
     "github.com/spf13/viper"
 
-    "database/sql"
-
-    // mysql driver
-    _ "github.com/go-sql-driver/mysql"
+    "github.com/jinzhu/gorm"
+    _ "github.com/go-sql-driver/mysql" //mysql dialect
 
     "golang.org/x/net/context"
     "google.golang.org/grpc"
@@ -25,10 +23,10 @@ import (
 )
 
 type UserService struct {
-    db *sql.DB
+    db *gorm.DB
 }
 
-func NewUserService(db *sql.DB) *UserService {
+func NewUserService(db *gorm.DB) *UserService {
     return &UserService{db: db}
 }
 
@@ -280,15 +278,20 @@ func main () {
 	// Drop it for another database
 	param := "parseTime=true"
 
-    dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?%s",
+    connStr := fmt.Sprintf("%s:%s@tcp(%s)/%s?%s",
         DatastoreDBUser,
         DatastoreDBPassword,
         DatastoreDBHost,
         DatastoreDBSchema,
         param)
-    db, err := sql.Open("mysql", dsn)
+    client, err := gorm.Open("mysql", connStr)
     if err != nil {
         log.Fatalf("failed to open database: %v", err)
+    }
+    client.LogMode(true)
+    instance = &MySQLClient{client}
+    if !instance.HasTable(&User{}) {
+        instance.AutoMigrate(&User{})
     }
     defer db.Close()
 

@@ -2,8 +2,7 @@
 
 curl http://localhost:8080/api/v1/users
 
-curl -X POST -k http://localhost:8080/api/v1/users -d '{"name": " world"}
-
+curl -X POST -k http://localhost:8080/api/v1/users -d '{"username": " huyen", "email": "huyen@gmail.com", "password": "123123", "phone":"0905023639"}'
 */
 
 package main
