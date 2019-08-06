@@ -73,6 +73,33 @@ func (s *UserSuite) TestCreateUser() {
     assert.NotEqual(s.T(), rcreate.Id, "")
 }
 
+func (s *UserSuite) TestCreateUsers() {
+    rcreate, err := s.User.CreateUsers(
+        context.Background(),
+        &api.CreateUsersRequest{
+            Users: []*api.User{
+                &api.User{
+                    Username: "vietwow",
+                    Email:    "vietwow@gmail.com",
+                    Password: "newhacker",
+                    Phone:    "123456",
+                },
+                &api.User{
+                    Username: "vietwow2",
+                    Email:    "vietwow2@gmail.com",
+                    Password: "newhacker",
+                    Phone:    "123456",
+                },
+            },
+        },
+    )
+    assert.Nil(s.T(), err)
+    assert.NotNil(s.T(), rcreate)
+    for _, id := range rcreate.Ids {
+        assert.NotEqual(s.T(), id, "")
+    }
+}
+
 func (s *UserSuite) TestGetUser() {
     user := &api.User{
         Username: "vietwow",
@@ -134,7 +161,7 @@ func (s *UserSuite) TestDeleteUser() {
     assert.Nil(s.T(), err)
     assert.NotNil(s.T(), rdel)
 
-    // Getting the User item should fail this time
+    // Getting the user should fail this time
     rget, err := s.User.GetUser(
         context.Background(),
         &api.GetUserRequest{
@@ -183,7 +210,7 @@ func (s *UserSuite) TestUpdateUser() {
     assert.Nil(s.T(), err)
     assert.NotNil(s.T(), rupdate)
 
-    // Getting the User item should return the updated version
+    // Getting the user should return the updated version
     rget, err := s.User.GetUser(
         context.Background(),
         &api.GetUserRequest{
@@ -198,6 +225,65 @@ func (s *UserSuite) TestUpdateUser() {
     assert.Equal(s.T(), rget.User.Phone, newUser.Phone)
 }
 
+func (s *UserSuite) TestUpdateUsers() {
+    users := []*api.User{
+        {
+            Username: "vietwow",
+            Email:    "vietwow@gmail.com",
+            Password: "newhacker",
+            Phone:    "123456",
+        },
+        {
+            Username: "vietwow2",
+            Email:    "vietwow2@gmail.com",
+            Password: "newhacker",
+            Phone:    "123456",
+        },
+        {
+            Username: "vietwow3",
+            Email:    "vietwow3@gmail.com",
+            Password: "newhacker",
+            Phone:    "123456",
+        },
+    }
+
+    // Create the users
+    resp, err := s.User.CreateUsers(
+        context.Background(),
+        &api.CreateUsersRequest{
+            Users: users,
+        },
+    )
+    assert.Nil(s.T(), err)
+    assert.NotNil(s.T(), resp)
+
+    // List the Users and update their fields
+    rlist, err := s.User.ListUser(
+        context.Background(),
+        &api.ListUserRequest{},
+    )
+    assert.Nil(s.T(), err)
+    assert.NotNil(s.T(), rlist)
+    assert.NotNil(s.T(), rlist.Users)
+
+    rupdate, err := s.User.UpdateUsers(
+        context.Background(),
+        &api.UpdateUsersRequest{
+            Users: rlist.Users,
+        },
+    )
+    assert.Nil(s.T(), err)
+    assert.NotNil(s.T(), rupdate)
+
+    // List again and see if the entries have had their fields changed
+    rlist, err = s.User.ListUser(
+        context.Background(),
+        &api.ListUserRequest{},
+    )
+    assert.Nil(s.T(), err)
+    assert.NotNil(s.T(), rlist)
+    assert.NotNil(s.T(), rlist.Users)
+}
 
 func (s *UserSuite) TestListUser() {
     users := []*api.User{
