@@ -13,7 +13,7 @@ service UserService {
     }
     rpc GetUser(GetUserRequest) returns (GetUserResponse) {
         option (google.api.http) = {
-          get: "/api/v1/users/{userId}",
+          get: "/api/v1/users/{id}",
         };
     }
     rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
@@ -30,14 +30,14 @@ service UserService {
     }
     rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse) {
         option (google.api.http) = {
-          delete: "/api/v1/users/{userId}",
+          delete: "/api/v1/users/{id}",
         };
     }
 }
 
 //
 message User {
-    int64  userId   = 1;
+    int64  id   = 1;
     string username = 2;
     string email    = 3;
     string password = 4;
@@ -55,7 +55,7 @@ message ListUserResponse {
 
 //
 message GetUserRequest {
-    int64 userId = 1;
+    int64 id = 1;
 }
 
 message GetUserResponse {
@@ -68,7 +68,7 @@ message CreateUserRequest {
 }
 
 message CreateUserResponse {
-    int64 userId = 1;
+    int64 id = 1;
     bool success = 2;
 }
 
@@ -78,16 +78,16 @@ message UpdateUserRequest {
 }
 
 message UpdateUserResponse {
-    int64 userId  = 1;
+    int64 id  = 1;
     bool success  = 2;
 }
 
 //
 message DeleteUserRequest {
-    int64 userId = 1;
+    int64 id = 1;
 }
 
 message DeleteUserResponse {
-    int64 userId = 1;
+    int64 id = 1;
     bool success = 2;
 }

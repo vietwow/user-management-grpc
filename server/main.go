@@ -1,7 +1,8 @@
 package main
 
 import (
-    "fmt"
+    // "fmt"
+    "time"
     "net"
     "log"
     "os"
@@ -11,190 +12,87 @@ import (
 
     "github.com/spf13/viper"
 
-    "database/sql"
-
-    // mysql driver
-    _ "github.com/go-sql-driver/mysql"
+    "github.com/go-pg/pg"
+    "github.com/go-pg/pg/orm"
 
     "golang.org/x/net/context"
     "google.golang.org/grpc"
     "google.golang.org/grpc/codes"
-    "google.golang.org/grpc/status"
+    // "google.golang.org/grpc/status"
 
     pb "github.com/vietwow/user-management-grpc/user"
+
+    // uuid "github.com/satori/go.uuid"
 )
 
 type UserService struct {
-    db *sql.DB
+    db *pg.DB
 }
 
-func NewUserService(db *sql.DB) *UserService {
+func NewUserService(db *pg.DB) *UserService {
     return &UserService{db: db}
 }
 
-// connect returns SQL database connection from the pool
-func (s *UserService) connect(ctx context.Context) (*sql.Conn, error) {
-    c, err := s.db.Conn(ctx)
-    if err != nil {
-        return nil, status.Error(codes.Unknown, "failed to connect to database-> "+err.Error())
-    }
-    return c, nil
-}
-
 func(s *UserService) ListUser(ctx context.Context, in *pb.ListUserRequest) (*pb.ListUserResponse, error) {
-    // get SQL connection from pool
-    c, err := s.connect(ctx)
+    var users []*pb.User
+    query := s.db.Model(&users).Order("id ASC")
+
+    err := query.Select()
     if err != nil {
-        return nil, err
-    }
-    defer c.Close()
-
-    // get User list
-    rows, err := c.QueryContext(ctx, "SELECT `UserId`, `Username`, `Email`, `Password`, `Phone` FROM User")
-    if err != nil {
-        return nil, status.Error(codes.Unknown, "failed to select from User-> "+err.Error())
-    }
-    defer rows.Close()
-
-    var list []*pb.User
-    for rows.Next() {
-        user := new(pb.User)
-        if err := rows.Scan(&user.UserId, &user.Username, &user.Email, &user.Password, &user.Phone); err != nil {
-            return nil, status.Error(codes.Unknown, "failed to retrieve field values from User row-> "+err.Error())
-        }
-        list = append(list, user)
+        return nil, grpc.Errorf(codes.NotFound, "Could not list items from the database: %s", err)
     }
 
-    if err := rows.Err(); err != nil {
-        return nil, status.Error(codes.Unknown, "failed to retrieve data from User-> "+err.Error())
-    }
-
-    return &pb.ListUserResponse{Users: list, Success: true}, nil
+    return &pb.ListUserResponse{Users: users, Success: true}, nil
 }
 
 func(s *UserService) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
-    log.Printf("Received: %v", in.User.UserId)
+    log.Printf("Received: %v", in.User.Id)
 
-    // get SQL connection from pool
-    c, err := s.connect(ctx)
+    // in.User.Id = uuid.NewV4().String()
+    err := s.db.Insert(in.User)
     if err != nil {
-        return nil, err
-    }
-    defer c.Close()
-
-    // insert ToDo entity data
-    res, err := c.ExecContext(ctx, "INSERT INTO User(`UserId`, `Username`, `Email`, `Password`, `Phone`) VALUES(?, ?, ?, ?, ?)",
-        in.User.UserId, in.User.Username, in.User.Email, in.User.Password, in.User.Phone)
-    if err != nil {
-        return nil, status.Error(codes.Unknown, "failed to insert into User-> "+err.Error())
+        return nil, grpc.Errorf(codes.Internal, "Could not insert user into the database: %s", err)
     }
 
-    // get ID of creates ToDo
-    id, err := res.LastInsertId()
-    if err != nil {
-        return nil, status.Error(codes.Unknown, "failed to retrieve id for created User-> "+err.Error())
-    }
-
-    return &pb.CreateUserResponse{UserId: id, Success: true}, nil
+    return &pb.CreateUserResponse{Id: in.User.Id, Success: true}, nil
 }
 
 func(s *UserService) GetUser(ctx context.Context, in *pb.GetUserRequest) (*pb.GetUserResponse, error) {
-    log.Printf("Received: %v", in.UserId)
+    log.Printf("Received: %v", in.Id)
 
-    // get SQL connection from pool
-    c, err := s.connect(ctx)
-    if err != nil {
-        return nil, err
-    }
-    defer c.Close()
-
-    // query ToDo by ID
-    rows, err := c.QueryContext(ctx, "SELECT `UserId`, `Username`, `Email`, `Password`, `Phone` FROM User WHERE `UserId`=?",
-        in.UserId)
-    if err != nil {
-        return nil, status.Error(codes.Unknown, "failed to select from User-> "+err.Error())
-    }
-    defer rows.Close()
-
-    if !rows.Next() {
-        if err := rows.Err(); err != nil {
-            return nil, status.Error(codes.Unknown, "failed to retrieve data from User-> "+err.Error())
-        }
-        return nil, status.Error(codes.NotFound, fmt.Sprintf("User with ID='%d' is not found",
-            in.UserId))
-    }
-
-    // get ToDo data
     var user pb.User
-    if err := rows.Scan(&user.UserId, &user.Username, &user.Email, &user.Password, &user.Phone); err != nil {
-        return nil, status.Error(codes.Unknown, "failed to retrieve field values from User row-> "+err.Error())
-    }
-
-    if rows.Next() {
-        return nil, status.Error(codes.Unknown, fmt.Sprintf("found multiple User rows with ID='%d'",
-            in.UserId))
+    err := s.db.Model(&user).Where("id = ?", in.Id).First()
+    if err != nil {
+        return nil, grpc.Errorf(codes.NotFound, "Could not retrieve user from the database: %s", err)
     }
 
     return &pb.GetUserResponse{User: &user}, nil
 }
 
 func(s *UserService) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
-    log.Printf("Received: %v", in.User.UserId)
+    log.Printf("Received: %v", in.User.Id)
 
-    // get SQL connection from pool
-    c, err := s.connect(ctx)
+    res, err := s.db.Model(in.User).Column("username", "email", "password", "phone").WherePK().Update()
+
+    if res.RowsAffected() == 0 {
+        return nil, grpc.Errorf(codes.NotFound, "Could not update user: not found")
+    }
     if err != nil {
-        return nil, err
-    }
-    defer c.Close()
-
-    // update User
-    res, err := c.ExecContext(ctx, "UPDATE User SET `Email`=?, `Password`=?, `Phone`=? WHERE `UserId`=?",
-        in.User.Email, in.User.Password, in.User.Phone, in.User.UserId)
-    if err != nil {
-        return nil, status.Error(codes.Unknown, "failed to update User-> "+err.Error())
+        return nil, grpc.Errorf(codes.Internal, "Could not update user from the database: %s", err)
     }
 
-    rows, err := res.RowsAffected()
-    if err != nil {
-        return nil, status.Error(codes.Unknown, "failed to retrieve rows affected value-> "+err.Error())
-    }
-
-    if rows == 0 {
-        return nil, status.Error(codes.NotFound, fmt.Sprintf("User with ID='%d' is not found",
-            in.User.UserId))
-    }
-
-    return &pb.UpdateUserResponse{UserId: in.User.UserId, Success: true}, nil
+    return &pb.UpdateUserResponse{Id: in.User.Id, Success: true}, nil
 }
 
 func(s *UserService) DeleteUser(ctx context.Context, in *pb.DeleteUserRequest) (*pb.DeleteUserResponse, error) {
-    log.Printf("Received: %v", in.UserId)
+    log.Printf("Received: %v", in.Id)
 
-    // get SQL connection from pool
-    c, err := s.connect(ctx)
+    err := s.db.Delete(&pb.User{Id: in.Id})
     if err != nil {
-        return nil, err
-    }
-    defer c.Close()
-
-    // delete User
-    res, err := c.ExecContext(ctx, "DELETE FROM User WHERE `UserId`=?", in.UserId)
-    if err != nil {
-        return nil, status.Error(codes.Unknown, "failed to delete User-> "+err.Error())
+        return nil, grpc.Errorf(codes.Internal, "Could not delete user from the database: %s", err)
     }
 
-    rows, err := res.RowsAffected()
-    if err != nil {
-        return nil, status.Error(codes.Unknown, "failed to retrieve rows affected value-> "+err.Error())
-    }
-
-    if rows == 0 {
-        return nil, status.Error(codes.NotFound, fmt.Sprintf("User with ID='%d' is not found",
-            in.UserId))
-    }
-
-    return &pb.DeleteUserResponse{UserId: in.UserId, Success: true}, nil
+    return &pb.DeleteUserResponse{Id: in.Id, Success: true}, nil
 }
 
 
@@ -222,7 +120,7 @@ const (
 // - snowboarding
 // - go
 // clothing:
-//   jacket: leather
+//      jacket: leather
 //   trousers: denim
 // age: 35
 // eyes : brown
@@ -239,9 +137,9 @@ func initConfig() error {
     //     "interval": "60m",
     //     "timeout":  "5s",
     // })
-    viper.SetDefault("DatastoreDBUser", "root")
+    viper.SetDefault("DatastoreDBUser", "postgres")
     viper.SetDefault("DatastoreDBPassword", "newhacker")
-    viper.SetDefault("DatastoreDBHost", "localhost:3306")
+    viper.SetDefault("DatastoreDBHost", "localhost:5432")
     viper.SetDefault("DatastoreDBSchema", "grab")
 
     configFile := "config.yaml"
@@ -276,22 +174,30 @@ func main () {
     }
 
 
-	// add MySQL driver specific parameter to parse date/time
-	// Drop it for another database
-	param := "parseTime=true"
+    log.Println("Connecting PostgreSQL....")
+    // Connect to PostgresQL
+    db := pg.Connect(&pg.Options{
+        User:     DatastoreDBUser,
+        Password: DatastoreDBPassword,
+        Database: DatastoreDBSchema,
+        Addr:     DatastoreDBHost,
+        RetryStatementTimeout: true,
+        MaxRetries:            4,
+        MinRetryBackoff:       250 * time.Millisecond,
+    })
 
-    dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?%s",
-        DatastoreDBUser,
-        DatastoreDBPassword,
-        DatastoreDBHost,
-        DatastoreDBSchema,
-        param)
-    db, err := sql.Open("mysql", dsn)
-    if err != nil {
-        log.Fatalf("failed to open database: %v", err)
-    }
     defer db.Close()
 
+    log.Println("Successfull Connected!")
+
+    // Create Table from User struct generated by gRPC
+    err = db.CreateTable(&pb.User{}, &orm.CreateTableOptions{
+        IfNotExists:   true,
+        FKConstraints: true,
+    })
+    if err != nil {
+     log.Fatalf("Create Table Failed: ",err)
+    }
 
     // Creates a new gRPC server
     s := grpc.NewServer()

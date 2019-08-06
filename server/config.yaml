@@ -1,4 +1,4 @@
-DatastoreDBUser: root
+DatastoreDBUser: postgres
 DatastoreDBPassword: newhacker
-DatastoreDBHost: localhost:3306
+DatastoreDBHost: localhost:5432
 DatastoreDBSchema: grab

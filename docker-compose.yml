@@ -6,6 +6,6 @@ services:
     image: postgres:11.4-alpine
     restart: always
     environment:
-      POSTGRES_PASSWORD: example
+      POSTGRES_PASSWORD: newhacker
     ports:
       - 5432:5432

@@ -81,10 +81,10 @@ func main() {
     log.Printf("CreateUser result: <%+v>\n\n", res1)
 
     // Call GetUser
-    id := res1.UserId
+    id := res1.Id
 
     req2 := pb.GetUserRequest{
-        UserId: id,
+        Id: id,
     }
     res2, err := c.GetUser(ctx, &req2)
     if err != nil {
@@ -95,7 +95,7 @@ func main() {
     // Call UpdateUser
     req3 := pb.UpdateUserRequest{
         User: &pb.User{
-            UserId:   res2.User.UserId,
+            Id:   res2.User.Id,
             Username: res2.User.Username,
             Email:    res2.User.Email + " + updated",
             Password: res2.User.Password,
@@ -118,7 +118,7 @@ func main() {
 
     // Call DeleteUser
     req5 := pb.DeleteUserRequest{
-        UserId:  id,
+        Id:  id,
     }
     res5, err := c.DeleteUser(ctx, &req5)
     if err != nil {
