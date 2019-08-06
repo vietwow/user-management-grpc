@@ -52,7 +52,9 @@ func (s *UserSuite) SetupTest() {
 }
 
 // Run after each test in the suite.
-func (s *UserSuite) TearDownTest() {}
+func (s *UserSuite) TearDownTest() {
+    s.User.db.DropTable(&api.User{}, &orm.DropTableOptions{IfExists: true})
+}
 
 func (s *UserSuite) TestCreateUser() {
     rcreate, err := s.User.CreateUser(
