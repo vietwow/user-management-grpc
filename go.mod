@@ -3,7 +3,7 @@ module github.com/vietwow/user-management-grpc
 go 1.12
 
 require (
-	github.com/go-pg/pg v8.0.5+incompatible // indirect
+	github.com/go-pg/pg v8.0.5+incompatible
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/protobuf v1.3.2

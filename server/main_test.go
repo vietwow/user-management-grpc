@@ -4,14 +4,12 @@ import (
     "context"
     "testing"
 
-    "database/sql"
-
     "github.com/spf13/viper"
-    "fmt"
+    "time"
 
     api "github.com/vietwow/user-management-grpc/user"
-    // "github.com/go-pg/pg"
-    // "github.com/go-pg/pg/orm"
+    "github.com/go-pg/pg"
+    "github.com/go-pg/pg/orm"
     "github.com/stretchr/testify/assert"
     "github.com/stretchr/testify/suite"
 )
@@ -21,28 +19,7 @@ type UserSuite struct {
     User *UserService
 }
 
-var (
-	ctx context.Context
-	db  *sql.DB
-)
-
 func TestUserTestSuite(t *testing.T) {
-    // db := pg.Connect(&pg.Options{
-    //     User:     "postgres",
-    //     Database: "User",
-    //     Addr:     "localhost:5432",
-    //     RetryStatementTimeout: true,
-    //     MaxRetries:            4,
-    //     MinRetryBackoff:       250 * time.Millisecond,
-    // })
-
-    suite.Run(t, &UserSuite{
-        User: &UserService{db: db},
-    })
-}
-
-// It will be run before each test of the suite. Set the default value etc. here.
-func (s *UserSuite) SetupTest() {
     // get configuration
     initConfig()
 
@@ -51,22 +28,27 @@ func (s *UserSuite) SetupTest() {
     DatastoreDBHost     := viper.GetString("DatastoreDBHost")
     DatastoreDBSchema   := viper.GetString("DatastoreDBSchema")
 
-    param := "parseTime=true"
+    db := pg.Connect(&pg.Options{
+        User:     DatastoreDBUser,
+        Password: DatastoreDBPassword,
+        Database: DatastoreDBSchema,
+        Addr:     DatastoreDBHost,
+        RetryStatementTimeout: true,
+        MaxRetries:            4,
+        MinRetryBackoff:       250 * time.Millisecond,
+    })
 
-    dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?%s",
-        DatastoreDBUser,
-        DatastoreDBPassword,
-        DatastoreDBHost,
-        DatastoreDBSchema,
-        param)
-    db, _ := sql.Open("mysql", dsn)
     defer db.Close()
-    // get SQL connection from pool
-    c, _ := db.Conn(ctx)
 
-    //res, err := c.ExecContext(ctx,"DROP TABLE User")
-    //res, err := c.ExecContext(ctx,"CREATE TABLE User (UserId BIGINT(20) PRIMARY KEY NOT NULL AUTO_INCREMENT, Username VARCHAR(200) DEFAULT NUL, Email VARCHAR(1024) DEFAULT NULL, Password VARCHAR(1024) DEFAULT NULL, Phone VARCHAR(1024) DEFAULT NULL")
-    c.ExecContext(ctx,"Truncate User")
+    suite.Run(t, &UserSuite{
+        User: &UserService{db: db},
+    })
+}
+
+// It will be run before each test of the suite. Set the default value etc. here.
+func (s *UserSuite) SetupTest() {
+    s.User.db.DropTable(&api.User{}, &orm.DropTableOptions{IfExists: true})
+    s.User.db.CreateTable(&api.User{}, nil)
 }
 
 // Run after each test in the suite.
@@ -86,7 +68,7 @@ func (s *UserSuite) TestCreateUser() {
     )
     assert.Nil(s.T(), err)
     assert.NotNil(s.T(), rcreate)
-    assert.NotEqual(s.T(), rcreate.UserId, "")
+    assert.NotEqual(s.T(), rcreate.Id, "")
 }
 
 func (s *UserSuite) TestGetUser() {
@@ -105,14 +87,14 @@ func (s *UserSuite) TestGetUser() {
     )
     assert.Nil(s.T(), err)
     assert.NotNil(s.T(), rcreate)
-    assert.NotEqual(s.T(), rcreate.UserId, "")
+    assert.NotEqual(s.T(), rcreate.Id, "")
 
-    id := rcreate.UserId
+    id := rcreate.Id
 
     rget, err := s.User.GetUser(
         context.Background(),
         &api.GetUserRequest{
-            UserId: id,
+            Id: id,
         },
     )
     assert.Nil(s.T(), err)
@@ -137,14 +119,14 @@ func (s *UserSuite) TestDeleteUser() {
     )
     assert.Nil(s.T(), err)
     assert.NotNil(s.T(), rcreate)
-    assert.NotEqual(s.T(), rcreate.UserId, "")
+    assert.NotEqual(s.T(), rcreate.Id, "")
 
-    id := rcreate.UserId
+    id := rcreate.Id
 
     rdel, err := s.User.DeleteUser(
         context.Background(),
         &api.DeleteUserRequest{
-            UserId: id,
+            Id: id,
         },
     )
     assert.Nil(s.T(), err)
@@ -154,12 +136,12 @@ func (s *UserSuite) TestDeleteUser() {
     rget, err := s.User.GetUser(
         context.Background(),
         &api.GetUserRequest{
-            UserId: id,
+            Id: id,
         },
     )
     assert.Nil(s.T(), rget)
     assert.NotNil(s.T(), err)
-    assert.Contains(s.T(), err.Error(), "Could not retrieve item from the database: pg: no rows in result set")
+    assert.Contains(s.T(), err.Error(), "Could not retrieve user from the database: pg: no rows in result set")
 }
 
 func (s *UserSuite) TestUpdateUser() {
@@ -178,11 +160,12 @@ func (s *UserSuite) TestUpdateUser() {
     )
     assert.Nil(s.T(), err)
     assert.NotNil(s.T(), rcreate)
-    assert.NotEqual(s.T(), rcreate.UserId, "")
+    assert.NotEqual(s.T(), rcreate.Id, "")
 
-    id := rcreate.UserId
+    id := rcreate.Id
 
     newUser := &api.User{
+        Id: id,
         Username: "vietwow2",
         Email:    "vietwow2@gmail.com",
         Password: "newhacker",
@@ -202,7 +185,7 @@ func (s *UserSuite) TestUpdateUser() {
     rget, err := s.User.GetUser(
         context.Background(),
         &api.GetUserRequest{
-            UserId: id,
+            Id: id,
         },
     )
     assert.NotNil(s.T(), rget)

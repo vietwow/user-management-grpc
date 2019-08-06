@@ -196,7 +196,7 @@ func main () {
         FKConstraints: true,
     })
     if err != nil {
-     log.Fatalf("Create Table Failed: ",err)
+        log.Fatalf("Create Table Failed: %v",err)
     }
 
     // Creates a new gRPC server
