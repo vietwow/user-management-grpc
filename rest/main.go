@@ -9,7 +9,7 @@ curl -X POST -k http://localhost:8080/api/v1/users -d '{"name": " world"}
 package main
 
 import (
-    "flag"
+    // "flag"
     "net/http"
     "os"
     "os/signal"
@@ -17,7 +17,6 @@ import (
 
     pb "github.com/vietwow/user-management-grpc/user"
 
-    "github.com/golang/glog"
     "github.com/grpc-ecosystem/grpc-gateway/runtime"
     "golang.org/x/net/context"
     "google.golang.org/grpc"
@@ -61,10 +60,9 @@ func run() error {
 }
 
 func main() {
-    flag.Parse()
-    defer glog.Flush()
+    // flag.Parse()
 
     if err := run(); err != nil {
-        glog.Fatal(err)
+        log.Fatal(err)
     }
 }
