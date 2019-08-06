@@ -13,4 +13,4 @@ run-client:
 	go run ./client/main.go 
 
 validate:
-	swagger validate user/todo.swagger.json
+	swagger validate user/user.swagger.json

@@ -27,5 +27,5 @@ go run rest/main.go
 ###
 
 ```
-swagger validate user/todo.swagger.json
+swagger validate user/user.swagger.json
 ```

@@ -93,7 +93,7 @@
         "tags": [
           "UserService"
         ]
-      },
+      }
     },
     "/api/v1/users/bulk": {
       "post": {
@@ -202,6 +202,28 @@
         }
       }
     },
+    "v1CreateUsersRequest": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1User"
+          }
+        }
+      }
+    },
+    "v1CreateUsersResponse": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "v1DeleteUserResponse": {
       "type": "object"
     },
@@ -254,6 +276,20 @@
       }
     },
     "v1UpdateUserResponse": {
+      "type": "object"
+    },
+    "v1UpdateUsersRequest": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1User"
+          }
+        }
+      }
+    },
+    "v1UpdateUsersResponse": {
       "type": "object"
     }
   }
