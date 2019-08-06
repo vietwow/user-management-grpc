@@ -93,6 +93,57 @@
         "tags": [
           "UserService"
         ]
+      },
+    },
+    "/api/v1/users/bulk": {
+      "post": {
+        "summary": "Bulk version of CreateUser",
+        "operationId": "CreateUsers",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1CreateUsersResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1CreateUsersRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      },
+      "put": {
+        "operationId": "UpdateUsers",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateUsersResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdateUsersRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
       }
     },
     "/api/v1/users/{id}": {

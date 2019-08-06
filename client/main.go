@@ -60,7 +60,7 @@ func main() {
     defer cancel()
 
 
-    // Call Create
+    // Call CreateUser
     username := "vietwow"
     email    := "vietwow@gmail.com"
     password := "newhacker"
@@ -125,4 +125,51 @@ func main() {
         log.Fatalf("DeleteUser failed: %v", err)
     }
     log.Printf("DeleteUser result: <%+v>\n\n", res5)
+
+    // Call CreateUsers
+    users := []*pb.User{
+        {
+            Username: "vietwow",
+            Email:    "vietwow@gmail.com",
+            Password: "newhacker",
+            Phone:    "123456",
+        },
+        {
+            Username: "vietwow2",
+            Email:    "vietwow2@gmail.com",
+            Password: "newhacker",
+            Phone:    "123456",
+        },
+        {
+            Username: "vietwow3",
+            Email:    "vietwow3@gmail.com",
+            Password: "newhacker",
+            Phone:    "123456",
+        },
+    }
+
+    req6 := pb.CreateUsersRequest{
+        Users: users,
+    }
+    res6, err := c.CreateUsers(ctx, &req6)
+    if err != nil {
+        log.Fatalf("CreateUsers failed: %v", err)
+    }
+    log.Printf("CreateUsers result: <%+v>\n\n", res6)
+
+    // List the users
+    rlist, err := c.ListUser(
+        context.Background(),
+        &pb.ListUserRequest{},
+    )
+
+    // Call UpdateUsers
+    req7 := pb.UpdateUsersRequest{
+        Users: rlist.Users,
+    }
+    res7, err := c.UpdateUsers(ctx, &req7)
+    if err != nil {
+        log.Fatalf("UpdateUsers failed: %v", err)
+    }
+    log.Printf("UpdateUsers result: <%+v>\n\n", res7)
 }

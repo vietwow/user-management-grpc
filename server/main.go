@@ -22,7 +22,7 @@ import (
 
     pb "github.com/vietwow/user-management-grpc/user"
 
-    // uuid "github.com/satori/go.uuid"
+    uuid "github.com/satori/go.uuid"
 )
 
 type UserService struct {
@@ -46,6 +46,7 @@ func(s *UserService) ListUser(ctx context.Context, in *pb.ListUserRequest) (*pb.
 }
 
 func(s *UserService) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
+    in.User.Id = uuid.NewV4().String()
     log.Printf("Received: %v", in.User.Id)
 
     // in.User.Id = uuid.NewV4().String()
@@ -55,6 +56,26 @@ func(s *UserService) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (
     }
 
     return &pb.CreateUserResponse{Id: in.User.Id, Success: true}, nil
+}
+
+func(s *UserService) CreateUsers(ctx context.Context, in *pb.CreateUsersRequest) (*pb.CreateUsersResponse, error) {
+    var ids []string
+    // fmt.Println(in.Users)
+    for _, User := range in.Users {
+        // fmt.Println(Users)
+
+        User.Id = uuid.NewV4().String()
+        // fmt.Println(User.Id)
+        ids = append(ids, User.Id)
+    }
+    log.Printf("Received: %v", ids)
+
+    err := s.db.Insert(&in.Users)
+    if err != nil {
+        return nil, grpc.Errorf(codes.Internal, "Could not insert users into the database: %s", err)
+    }
+
+    return &pb.CreateUsersResponse{Ids: ids, Success: true}, nil
 }
 
 func(s *UserService) GetUser(ctx context.Context, in *pb.GetUserRequest) (*pb.GetUserResponse, error) {
@@ -82,6 +103,25 @@ func(s *UserService) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (
     }
 
     return &pb.UpdateUserResponse{Id: in.User.Id, Success: true}, nil
+}
+
+func(s *UserService) UpdateUsers(ctx context.Context, in *pb.UpdateUsersRequest) (*pb.UpdateUsersResponse, error) {
+    var ids []string
+    for _, User := range in.Users {
+        ids = append(ids, User.Id)
+    }
+    log.Printf("Received: %v", ids)
+
+    res, err := s.db.Model(&in.Users).Column("username", "email", "password", "phone").WherePK().Update()
+
+    if res.RowsAffected() == 0 {
+        return nil, grpc.Errorf(codes.NotFound, "Could not update users: not found")
+    }
+    if err != nil {
+        return nil, grpc.Errorf(codes.Internal, "Could not update users from the database: %s", err)
+    }
+
+    return &pb.UpdateUsersResponse{Ids: ids, Success: true}, nil
 }
 
 func(s *UserService) DeleteUser(ctx context.Context, in *pb.DeleteUserRequest) (*pb.DeleteUserResponse, error) {

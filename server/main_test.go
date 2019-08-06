@@ -199,79 +199,55 @@ func (s *UserSuite) TestUpdateUser() {
 }
 
 
-	// func (s *UserSuite) TestListUser() {
-	//     items := []*api.User{
-	//         {
-	//             Title:       "item_1",
-	//             Description: "item desc 1",
-	//             Completed:   true,
-	//         },
-	//         {
-	//             Title:       "item_2",
-	//             Description: "item desc 2",
-	//         },
-	//         {
-	//             Title:       "item_3",
-	//             Description: "item desc 3",
-	//         },
-	//         {
-	//             Title:       "item_4",
-	//             Description: "item desc 4",
-	//             Completed:   true,
-	//         },
-	//     }
+func (s *UserSuite) TestListUser() {
+    users := []*api.User{
+        {
+            Username: "vietwow",
+            Email:    "vietwow@gmail.com",
+            Password: "newhacker",
+            Phone:    "123456",
+        },
+        {
+            Username: "vietwow2",
+            Email:    "vietwow2@gmail.com",
+            Password: "newhacker",
+            Phone:    "123456",
+        },
+        {
+            Username: "vietwow3",
+            Email:    "vietwow3@gmail.com",
+            Password: "newhacker",
+            Phone:    "123456",
+        },
+    }
 
-	//     // List with empty database
-	//     rlist, err := s.User.ListUser(
-	//         context.Background(),
-	//         &api.ListUserRequest{},
-	//     )
-	//     assert.Nil(s.T(), err)
-	//     assert.NotNil(s.T(), rlist)
-	//     assert.Nil(s.T(), rlist.Items)
-	//     assert.Equal(s.T(), len(rlist.Items), 0)
+    // List with empty database
+    rlist, err := s.User.ListUser(
+        context.Background(),
+        &api.ListUserRequest{},
+    )
+    assert.Nil(s.T(), err)
+    assert.NotNil(s.T(), rlist)
+    assert.Nil(s.T(), rlist.Users)
+    assert.Equal(s.T(), len(rlist.Users), 0)
 
-	//     // Create the User items
-	//     rcreate, err := s.User.CreateUsers(
-	//         context.Background(),
-	//         &api.CreateUsersRequest{
-	//             Items: items,
-	//         },
-	//     )
-	//     assert.Nil(s.T(), err)
-	//     assert.NotNil(s.T(), rcreate)
+    // Create the User Users
+    rcreate, err := s.User.CreateUsers(
+        context.Background(),
+        &api.CreateUsersRequest{
+            Users: users,
+        },
+    )
+    assert.Nil(s.T(), err)
+    assert.NotNil(s.T(), rcreate)
 
-	//     // List the items
-	//     rlist, err = s.User.ListUser(
-	//         context.Background(),
-	//         &api.ListUserRequest{},
-	//     )
-	//     assert.Nil(s.T(), err)
-	//     assert.NotNil(s.T(), rlist)
-	//     assert.NotNil(s.T(), rlist.Items)
-	//     assert.Equal(s.T(), len(rlist.Items), 4)
-
-	//     // Limit the result of List
-	//     rlist, err = s.User.ListUser(
-	//         context.Background(),
-	//         &api.ListUserRequest{
-	//             Limit: 2,
-	//         },
-	//     )
-	//     assert.Nil(s.T(), err)
-	//     assert.NotNil(s.T(), rlist)
-	//     assert.NotNil(s.T(), rlist.Items)
-	//     assert.Equal(s.T(), len(rlist.Items), 2)
-
-	//     // Only list non completed items
-	//     rlist, err = s.User.ListUser(
-	//         context.Background(),
-	//         &api.ListUserRequest{
-	//             NotCompleted: true,
-	//         },
-	//     )
-	//     assert.Nil(s.T(), err)
-	//     assert.NotNil(s.T(), rlist)
-	//     assert.NotNil(s.T(), rlist.Items)
-	//     assert.Equal(s.T(), len(rlist.Items), 2)
-	// }
+    // List the Users
+    rlist, err = s.User.ListUser(
+        context.Background(),
+        &api.ListUserRequest{},
+    )
+    assert.Nil(s.T(), err)
+    assert.NotNil(s.T(), rlist)
+    assert.NotNil(s.T(), rlist.Users)
+    assert.Equal(s.T(), len(rlist.Users), 3)
+}

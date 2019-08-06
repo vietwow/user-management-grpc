@@ -22,10 +22,22 @@ service UserService {
           body: "user",
         };
     }
+    rpc CreateUsers(CreateUsersRequest) returns (CreateUsersResponse) {
+        option (google.api.http) = {
+          post: "/api/v1/users/bulk",
+          body: "*",
+        };
+    }
     rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse) {
         option (google.api.http) = {
           put: "/api/v1/users",
           body: "user",
+        };
+    }
+    rpc UpdateUsers(UpdateUsersRequest) returns (UpdateUsersResponse) {
+        option (google.api.http) = {
+          put: "/api/v1/users/bulk",
+          body: "*",
         };
     }
     rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse) {
@@ -37,7 +49,7 @@ service UserService {
 
 //
 message User {
-    int64  id   = 1;
+    string  id   = 1;
     string username = 2;
     string email    = 3;
     string password = 4;
@@ -55,7 +67,7 @@ message ListUserResponse {
 
 //
 message GetUserRequest {
-    int64 id = 1;
+    string id = 1;
 }
 
 message GetUserResponse {
@@ -68,7 +80,17 @@ message CreateUserRequest {
 }
 
 message CreateUserResponse {
-    int64 id = 1;
+    string id = 1;
+    bool success = 2;
+}
+
+//
+message CreateUsersRequest {
+    repeated User users = 1;
+}
+
+message CreateUsersResponse {
+    repeated string ids = 1;
     bool success = 2;
 }
 
@@ -78,16 +100,26 @@ message UpdateUserRequest {
 }
 
 message UpdateUserResponse {
-    int64 id  = 1;
+    string id = 1;
+    bool success  = 2;
+}
+
+//
+message UpdateUsersRequest {
+    repeated User users = 1;
+}
+
+message UpdateUsersResponse {
+    repeated string ids  = 1;
     bool success  = 2;
 }
 
 //
 message DeleteUserRequest {
-    int64 id = 1;
+    string id = 1;
 }
 
 message DeleteUserResponse {
-    int64 id = 1;
+    string id = 1;
     bool success = 2;
 }
