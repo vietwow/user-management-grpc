@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "user/user.proto",
+    "title": "user.proto",
     "version": "version not set"
   },
   "schemes": [
@@ -20,28 +20,12 @@
         "operationId": "ListUser",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/v1ListUserResponse"
             }
           }
         },
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "not_completed",
-            "in": "query",
-            "required": false,
-            "type": "boolean",
-            "format": "boolean"
-          }
-        ],
         "tags": [
           "UserService"
         ]
@@ -50,7 +34,7 @@
         "operationId": "CreateUser",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/v1CreateUserResponse"
             }
@@ -74,7 +58,7 @@
         "operationId": "UpdateUser",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/v1UpdateUserResponse"
             }
@@ -97,11 +81,10 @@
     },
     "/api/v1/users/bulk": {
       "post": {
-        "summary": "Bulk version of CreateUser",
         "operationId": "CreateUsers",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/v1CreateUsersResponse"
             }
@@ -125,7 +108,7 @@
         "operationId": "UpdateUsers",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/v1UpdateUsersResponse"
             }
@@ -151,7 +134,7 @@
         "operationId": "GetUser",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/v1GetUserResponse"
             }
@@ -173,7 +156,7 @@
         "operationId": "DeleteUser",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/v1DeleteUserResponse"
             }
@@ -199,13 +182,17 @@
       "properties": {
         "id": {
           "type": "string"
+        },
+        "success": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
     "v1CreateUsersRequest": {
       "type": "object",
       "properties": {
-        "items": {
+        "users": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1User"
@@ -221,16 +208,29 @@
           "items": {
             "type": "string"
           }
+        },
+        "success": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
     "v1DeleteUserResponse": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "success": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
     },
     "v1GetUserResponse": {
       "type": "object",
       "properties": {
-        "item": {
+        "user": {
           "$ref": "#/definitions/v1User"
         }
       }
@@ -238,11 +238,53 @@
     "v1ListUserResponse": {
       "type": "object",
       "properties": {
-        "items": {
+        "users": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1User"
           }
+        },
+        "success": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "v1UpdateUserResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "success": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "v1UpdateUsersRequest": {
+      "type": "object",
+      "properties": {
+        "users": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1User"
+          }
+        }
+      }
+    },
+    "v1UpdateUsersResponse": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "success": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
@@ -252,45 +294,19 @@
         "id": {
           "type": "string"
         },
-        "title": {
+        "username": {
           "type": "string"
         },
-        "description": {
+        "email": {
           "type": "string"
         },
-        "completed": {
-          "type": "boolean",
-          "format": "boolean",
-          "title": "@inject_tag: sql:\",notnull,default:false\""
+        "password": {
+          "type": "string"
         },
-        "created_at": {
-          "type": "string",
-          "format": "date-time",
-          "title": "@inject_tag: sql:\"type:timestamptz,default:now()\""
-        },
-        "updated_at": {
-          "type": "string",
-          "format": "date-time",
-          "title": "@inject_tag: sql:\"type:timestamptz\""
+        "phone": {
+          "type": "string"
         }
       }
-    },
-    "v1UpdateUserResponse": {
-      "type": "object"
-    },
-    "v1UpdateUsersRequest": {
-      "type": "object",
-      "properties": {
-        "items": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/v1User"
-          }
-        }
-      }
-    },
-    "v1UpdateUsersResponse": {
-      "type": "object"
     }
   }
 }

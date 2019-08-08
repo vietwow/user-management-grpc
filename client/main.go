@@ -127,29 +127,48 @@ func main() {
     log.Printf("DeleteUser result: <%+v>\n\n", res5)
 
     // Call CreateUsers
-    users := []*pb.User{
-        {
-            Username: "vietwow",
-            Email:    "vietwow@gmail.com",
-            Password: "newhacker",
-            Phone:    "123456",
-        },
-        {
-            Username: "vietwow2",
-            Email:    "vietwow2@gmail.com",
-            Password: "newhacker",
-            Phone:    "123456",
-        },
-        {
-            Username: "vietwow3",
-            Email:    "vietwow3@gmail.com",
-            Password: "newhacker",
-            Phone:    "123456",
-        },
-    }
+    // users := []*pb.User{
+    //     {
+    //         Username: "vietwow",
+    //         Email:    "vietwow@gmail.com",
+    //         Password: "newhacker",
+    //         Phone:    "123456",
+    //     },
+    //     {
+    //         Username: "vietwow2",
+    //         Email:    "vietwow2@gmail.com",
+    //         Password: "newhacker",
+    //         Phone:    "123456",
+    //     },
+    //     {
+    //         Username: "vietwow3",
+    //         Email:    "vietwow3@gmail.com",
+    //         Password: "newhacker",
+    //         Phone:    "123456",
+    //     },
+    // }
 
     req6 := pb.CreateUsersRequest{
-        Users: users,
+        Users: []*pb.User{
+            {
+                Username: "vietwow",
+                Email:    "vietwow@gmail.com",
+                Password: "newhacker",
+                Phone:    "123456",
+            },
+            {
+                Username: "vietwow2",
+                Email:    "vietwow2@gmail.com",
+                Password: "newhacker",
+                Phone:    "123456",
+            },
+            {
+                Username: "vietwow3",
+                Email:    "vietwow3@gmail.com",
+                Password: "newhacker",
+                Phone:    "123456",
+            },
+        },
     }
     res6, err := c.CreateUsers(ctx, &req6)
     if err != nil {
