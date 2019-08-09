@@ -14,13 +14,17 @@ import (
     "net/http"
     "os"
     "os/signal"
-    "log"
+    // "log"
+    "go.uber.org/zap"
 
     pb "github.com/vietwow/user-management-grpc/user"
 
     "github.com/grpc-ecosystem/grpc-gateway/runtime"
     "golang.org/x/net/context"
     "google.golang.org/grpc"
+
+    "github.com/vietwow/user-management-grpc/pkg/logger"
+    "github.com/vietwow/user-management-grpc/pkg/protocol/rest/middleware"
 )
 
 var (
@@ -29,7 +33,7 @@ var (
 )
 
 
-func run() error {
+func main() {
     ctx := context.Background()
     ctx, cancel := context.WithCancel(ctx)
     defer cancel()
@@ -38,32 +42,25 @@ func run() error {
     opts := []grpc.DialOption{grpc.WithInsecure()}
     err := pb.RegisterUserServiceHandlerFromEndpoint(ctx, mux, grpcPort, opts)
     if err != nil {
-        log.Fatalf("failed to start HTTP gateway %v", err)
+        logger.Log.Fatal("failed to start HTTP gateway:", zap.String("reason", err.Error()))
     }
 
     srv := http.Server{
         Addr:    httpPort,
-        Handler: mux,
+        // Handler: mux,
+        Handler: middleware.AddRequestID(middleware.AddLogger(logger.Log, mux)),
     }
 
     c := make(chan os.Signal, 1)
     signal.Notify(c, os.Interrupt)
     go func() {
         for range c {
-            log.Println("shutting down HTTP server...")
+            logger.Log.Warn("shutting down HTTP server...")
             if err := srv.Shutdown(context.Background()); err != nil {
-                log.Fatalf("failed to shutdown HTTP server: %v", err)
+                logger.Log.Fatal("failed to shutdown HTTP server:", zap.String("reason", err.Error()))
             }
         }
     }()
 
-    return srv.ListenAndServe()
-}
-
-func main() {
-    // flag.Parse()
-
-    if err := run(); err != nil {
-        log.Fatal(err)
-    }
+    srv.ListenAndServe()
 }

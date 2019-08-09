@@ -5,6 +5,7 @@ go 1.12
 require (
 	github.com/go-pg/pg v8.0.5+incompatible
 	github.com/golang/protobuf v1.3.2
+	github.com/grpc-ecosystem/go-grpc-middleware v1.0.0
 	github.com/grpc-ecosystem/grpc-gateway v1.9.5
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/satori/go.uuid v1.2.0
