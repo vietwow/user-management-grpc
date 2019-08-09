@@ -62,5 +62,6 @@ func main() {
         }
     }()
 
+    logger.Log.Info("starting HTTP/REST gateway...")
     srv.ListenAndServe()
 }

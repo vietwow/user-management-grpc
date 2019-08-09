@@ -213,7 +213,7 @@ func main () {
 
 
     // initialize logger
-    LogLevel := 1 // only print warn, not print info
+    LogLevel := 0 // only print warn, not print info
     LogTimeFormat := "2006-01-02T15:04:05.999999999Z07:00"
     if err := logger.Init(LogLevel, LogTimeFormat); err != nil {
         logger.Log.Fatal("failed to initialize logger:", zap.String("reason", err.Error()))
