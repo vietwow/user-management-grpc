@@ -212,7 +212,9 @@ func main () {
 
 
     // initialize logger
-    if err := logger.Init(cfg.LogLevel, cfg.LogTimeFormat); err != nil {
+    LogLevel := 0
+    LogTimeFormat := "2006-01-02T15:04:05Z07:00"
+    if err := logger.Init(LogLevel, LogTimeFormat); err != nil {
         logger.Log.Fatal("failed to initialize logger:", zap.String("reason", err.Error()))
     }
 
