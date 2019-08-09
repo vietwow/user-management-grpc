@@ -39,6 +39,7 @@ func NewUserService(db *pg.DB) *UserService {
 }
 
 func(s *UserService) ListUser(ctx context.Context, in *pb.ListUserRequest) (*pb.ListUserResponse, error) {
+    logger.Log.Info("Called function ListUsers()")
     var users []*pb.User
     query := s.db.Model(&users).Order("id ASC")
 
@@ -52,7 +53,7 @@ func(s *UserService) ListUser(ctx context.Context, in *pb.ListUserRequest) (*pb.
 
 func(s *UserService) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
     in.User.Id = uuid.NewV4().String()
-    logger.Log.Info("Received:", zap.String("in.User.Id",in.User.Id)) 
+    logger.Log.Info("Called function CreateUser() - Received:", zap.String("in.User.Id",in.User.Id)) 
 
     // in.User.Id = uuid.NewV4().String()
     err := s.db.Insert(in.User)
@@ -73,7 +74,7 @@ func(s *UserService) CreateUsers(ctx context.Context, in *pb.CreateUsersRequest)
         // fmt.Println(User.Id)
         ids = append(ids, User.Id)
     }
-    logger.Log.Info("Received:", zap.Strings("ids",ids))
+    logger.Log.Info("Called function CreateUsers() - Received:", zap.Strings("ids",ids))
 
     err := s.db.Insert(&in.Users)
     if err != nil {
@@ -84,7 +85,7 @@ func(s *UserService) CreateUsers(ctx context.Context, in *pb.CreateUsersRequest)
 }
 
 func(s *UserService) GetUser(ctx context.Context, in *pb.GetUserRequest) (*pb.GetUserResponse, error) {
-    logger.Log.Info("Received:", zap.String("in.Id",in.Id))
+    logger.Log.Info("Called function GetUser() - Received:", zap.String("in.Id",in.Id))
 
     var user pb.User
     err := s.db.Model(&user).Where("id = ?", in.Id).First()
@@ -96,7 +97,7 @@ func(s *UserService) GetUser(ctx context.Context, in *pb.GetUserRequest) (*pb.Ge
 }
 
 func(s *UserService) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
-    logger.Log.Info("Received:", zap.String("in.User.Id",in.User.Id))
+    logger.Log.Info("Called function UpdateUser() - Received:", zap.String("in.User.Id",in.User.Id))
 
     res, err := s.db.Model(in.User).Column("username", "email", "password", "phone").WherePK().Update()
 
@@ -115,7 +116,7 @@ func(s *UserService) UpdateUsers(ctx context.Context, in *pb.UpdateUsersRequest)
     for _, User := range in.Users {
         ids = append(ids, User.Id)
     }
-    logger.Log.Info("Received:", zap.Strings("ids",ids))
+    logger.Log.Info("Called function UpdateUsers() - Received:", zap.Strings("ids",ids))
 
     res, err := s.db.Model(&in.Users).Column("username", "email", "password", "phone").WherePK().Update()
 
@@ -130,7 +131,7 @@ func(s *UserService) UpdateUsers(ctx context.Context, in *pb.UpdateUsersRequest)
 }
 
 func(s *UserService) DeleteUser(ctx context.Context, in *pb.DeleteUserRequest) (*pb.DeleteUserResponse, error) {
-    logger.Log.Info("Received:", zap.String("in.Id",in.Id))
+    logger.Log.Info("Called function DeleteUser() - Received:", zap.String("in.Id",in.Id))
 
     err := s.db.Delete(&pb.User{Id: in.Id})
     if err != nil {
