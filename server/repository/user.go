@@ -2,7 +2,7 @@ package repository
 
 import (
 	"github.com/go-pg/pg"
-	"github.com/xuanit/testing/todo/pb"
+	pb "github.com/vietwow/user-management-grpc/user"
 )
 
 type UserImpl struct {
