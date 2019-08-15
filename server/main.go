@@ -41,7 +41,7 @@ func NewUserService(userRepo repository.User) *UserService {
     return &UserService{UserRepo: userRepo}
 }
 
-func(s *UserService) ListUser(ctx context.Context, in *pb.ListUserRequest) (*pb.ListUserResponse, error) {
+func(s UserService) ListUser(ctx context.Context, in *pb.ListUserRequest) (*pb.ListUserResponse, error) {
     logger.Log.Info("Called function ListUsers()")
     var users []*pb.User
 
@@ -53,7 +53,7 @@ func(s *UserService) ListUser(ctx context.Context, in *pb.ListUserRequest) (*pb.
     return &pb.ListUserResponse{Users: users, Success: true}, nil
 }
 
-func(s *UserService) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
+func(s UserService) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
     in.User.Id = uuid.NewV4().String()
     logger.Log.Info("Called function CreateUser() - Received:", zap.String("in.User.Id",in.User.Id)) 
 
@@ -65,7 +65,7 @@ func(s *UserService) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (
     return &pb.CreateUserResponse{Id: in.User.Id, Success: true}, nil
 }
 
-func(s *UserService) CreateUsers(ctx context.Context, in *pb.CreateUsersRequest) (*pb.CreateUsersResponse, error) {
+func(s UserService) CreateUsers(ctx context.Context, in *pb.CreateUsersRequest) (*pb.CreateUsersResponse, error) {
     var ids []string
     // fmt.Println(in.Users)
     for _, User := range in.Users {
@@ -85,7 +85,7 @@ func(s *UserService) CreateUsers(ctx context.Context, in *pb.CreateUsersRequest)
     return &pb.CreateUsersResponse{Ids: ids, Success: true}, nil
 }
 
-func(s *UserService) GetUser(ctx context.Context, in *pb.GetUserRequest) (*pb.GetUserResponse, error) {
+func(s UserService) GetUser(ctx context.Context, in *pb.GetUserRequest) (*pb.GetUserResponse, error) {
     logger.Log.Info("Called function GetUser() - Received:", zap.String("in.Id",in.Id))
 
     user, err := s.UserRepo.Get(in.Id)
@@ -96,7 +96,7 @@ func(s *UserService) GetUser(ctx context.Context, in *pb.GetUserRequest) (*pb.Ge
     return &pb.GetUserResponse{User: user}, nil
 }
 
-func(s *UserService) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
+func(s UserService) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
     logger.Log.Info("Called function UpdateUser() - Received:", zap.String("in.User.Id",in.User.Id))
 
     err := s.UserRepo.Update(in.User)
@@ -107,7 +107,7 @@ func(s *UserService) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (
     return &pb.UpdateUserResponse{Id: in.User.Id, Success: true}, nil
 }
 
-func(s *UserService) UpdateUsers(ctx context.Context, in *pb.UpdateUsersRequest) (*pb.UpdateUsersResponse, error) {
+func(s UserService) UpdateUsers(ctx context.Context, in *pb.UpdateUsersRequest) (*pb.UpdateUsersResponse, error) {
     var ids []string
     for _, User := range in.Users {
         ids = append(ids, User.Id)
@@ -122,7 +122,7 @@ func(s *UserService) UpdateUsers(ctx context.Context, in *pb.UpdateUsersRequest)
     return &pb.UpdateUsersResponse{Ids: ids, Success: true}, nil
 }
 
-func(s *UserService) DeleteUser(ctx context.Context, in *pb.DeleteUserRequest) (*pb.DeleteUserResponse, error) {
+func(s UserService) DeleteUser(ctx context.Context, in *pb.DeleteUserRequest) (*pb.DeleteUserResponse, error) {
     logger.Log.Info("Called function DeleteUser() - Received:", zap.String("in.Id",in.Id))
 
     err := s.UserRepo.Delete(in.Id)
