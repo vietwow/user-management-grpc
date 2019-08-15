@@ -37,18 +37,15 @@ type UserService struct {
     UserRepo repository.User
 }
 
-func NewUserService(db *pg.DB) *UserService {
-    return &UserService{db: db}
+func NewUserService(userRepo repository.User) *UserService {
+    return &UserService{UserRepo: userRepo}
 }
 
 func(s *UserService) ListUser(ctx context.Context, in *pb.ListUserRequest) (*pb.ListUserResponse, error) {
     logger.Log.Info("Called function ListUsers()")
     var users []*pb.User
-    // query := s.db.Model(&users).Order("id ASC")
 
-    // err := query.Select()
-
-    err := s.UserRepo.List(users)
+    users, err := s.UserRepo.List()
     if err != nil {
         return nil, grpc.Errorf(codes.NotFound, "Could not list items from the database: %s", err)
     }
@@ -60,7 +57,6 @@ func(s *UserService) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (
     in.User.Id = uuid.NewV4().String()
     logger.Log.Info("Called function CreateUser() - Received:", zap.String("in.User.Id",in.User.Id)) 
 
-    // err := s.db.Insert(in.User)
     err := s.UserRepo.Insert(in.User)
     if err != nil {
         return nil, grpc.Errorf(codes.Internal, "Could not insert user into the database: %s", err)
@@ -81,7 +77,7 @@ func(s *UserService) CreateUsers(ctx context.Context, in *pb.CreateUsersRequest)
     }
     logger.Log.Info("Called function CreateUsers() - Received:", zap.Strings("ids",ids))
 
-    err := s.UserRepo.InsertBulk(&in.Users)
+    err := s.UserRepo.InsertBulk(in.Users)
     if err != nil {
         return nil, grpc.Errorf(codes.Internal, "Could not insert users into the database: %s", err)
     }
@@ -92,20 +88,16 @@ func(s *UserService) CreateUsers(ctx context.Context, in *pb.CreateUsersRequest)
 func(s *UserService) GetUser(ctx context.Context, in *pb.GetUserRequest) (*pb.GetUserResponse, error) {
     logger.Log.Info("Called function GetUser() - Received:", zap.String("in.Id",in.Id))
 
-    // var user pb.User
-    // err := s.db.Model(&user).Where("id = ?", in.Id).First()
     user, err := s.UserRepo.Get(in.Id)
     if err != nil {
         return nil, grpc.Errorf(codes.NotFound, "Could not retrieve user from the database: %s", err)
     }
 
-    return &pb.GetUserResponse{User: &user}, nil
+    return &pb.GetUserResponse{User: user}, nil
 }
 
 func(s *UserService) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
     logger.Log.Info("Called function UpdateUser() - Received:", zap.String("in.User.Id",in.User.Id))
-
-    // res, err := s.db.Model(in.User).Column("username", "email", "password", "phone").WherePK().Update()
 
     err := s.UserRepo.Update(in.User)
     if err != nil {
@@ -122,8 +114,7 @@ func(s *UserService) UpdateUsers(ctx context.Context, in *pb.UpdateUsersRequest)
     }
     logger.Log.Info("Called function UpdateUsers() - Received:", zap.Strings("ids",ids))
 
-    // res, err := s.db.Model(&in.Users).Column("username", "email", "password", "phone").WherePK().Update()
-    err := s.GetUserResponse.UpdateBulk(&in.Users)
+    err := s.UserRepo.UpdateBulk(in.Users)
     if err != nil {
         return nil, grpc.Errorf(codes.Internal, "Could not update users from the database: %s", err)
     }
@@ -134,46 +125,19 @@ func(s *UserService) UpdateUsers(ctx context.Context, in *pb.UpdateUsersRequest)
 func(s *UserService) DeleteUser(ctx context.Context, in *pb.DeleteUserRequest) (*pb.DeleteUserResponse, error) {
     logger.Log.Info("Called function DeleteUser() - Received:", zap.String("in.Id",in.Id))
 
-    // err := s.db.Delete(&pb.User{Id: in.Id})
-    err := s.UserRepo.Delete(&pb.User{Id: in.Id})
+    err := s.UserRepo.Delete(in.Id)
     if err != nil {
         return nil, grpc.Errorf(codes.Internal, "Could not delete user from the database: %s", err)
     }
 
     return &pb.DeleteUserResponse{Id: in.Id, Success: true}, nil
 }
-
+    
 
 // Config is configuration for Server
 const (
     port = ":50051"
 )
-
-// default config in buffer
-
-// toml
-// var configDefault = []byte(`
-// [database]
-//     hostname = "localhost"
-//     username = "root"
-//     password = "khongbiet"
-// `)
-
-// yaml
-// var yamlExample = []byte(`
-// Hacker: true
-// name: steve
-// hobbies:
-// - skateboarding
-// - snowboarding
-// - go
-// clothing:
-//      jacket: leather
-//   trousers: denim
-// age: 35
-// eyes : brown
-// beard: true
-// `)
 
 func initConfig() error {
     // log.Println("Loading config...")
@@ -267,7 +231,7 @@ func main () {
     userRep := repository.UserImpl{DB: db}
 
     // pb.RegisterUserServiceServer(s, &UserService{})
-    pb.RegisterUserServiceServer(s, NewUserService(userRep))
+    pb.RegisterUserServiceServer(s, &UserService{UserRepo: userRep})
 
     // graceful shutdown
     ctx := context.Background()

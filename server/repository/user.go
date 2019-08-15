@@ -3,6 +3,8 @@ package repository
 import (
 	"github.com/go-pg/pg"
 	pb "github.com/vietwow/user-management-grpc/user"
+
+	"log"
 )
 
 type UserImpl struct {
@@ -11,10 +13,10 @@ type UserImpl struct {
 
 type User interface {
 	List() ([]*pb.User, error)
-	Get(id string) (pb.User, error)
-	Insert(user pb.User) (error)
+	Get(id string) (*pb.User, error)
+	Insert(user *pb.User) (error)
 	InsertBulk(users []*pb.User) (error)
-	Update(user pb.User) (error)
+	Update(user *pb.User) (error)
 	UpdateBulk(users []*pb.User) (error)
 	Delete(id string) (error)
 }
@@ -33,25 +35,6 @@ type User interface {
 // 		return nil, err
 // 	}
 // 	return items, nil
-// }
-
-// func (r UserImpl) Insert(items *pb.Todo)  error {
-// 	err := r.DB.Insert(items)
-// 	return err
-// }
-
-// func (r UserImpl) Get(id string) (*pb.Todo, error) {
-// 		var item pb.Todo
-// 		err := r.DB.Model(&item).Where("id = ?", id).First()
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		return &item, nil
-// }
-
-// func (r UserImpl) Delete(id string) error {
-// 	err := r.DB.Delete(&pb.Todo{Id: id})
-// 	return err
 // }
 
 func (r UserImpl) List() ([]*pb.User, error) {
@@ -84,16 +67,16 @@ func (r UserImpl) Insert(user *pb.User) error {
 	err := r.DB.Insert(user)
 
     if err != nil {
-        return nil, log.Fatal("Could not insert user into the database: %s", err)
+        return err
     }
 	return err
 }
 
 func (r UserImpl) InsertBulk(users []*pb.User) error {
-	err := r.DB.Insert(users)
+	err := r.DB.Insert(&users)
 
     if err != nil {
-        return nil, log.Fatal("Could not insert users into the database: %s", err)
+        return err
     }
 	return err
 }
@@ -103,10 +86,10 @@ func (r UserImpl) Update(user *pb.User) error {
 	res, err := r.DB.Model(user).Column("username", "email", "password", "phone").WherePK().Update()
 
     if res.RowsAffected() == 0 {
-        return nil, log.Fatal("Could not update user: not found")
+        log.Fatal("Could not update user: not found")
     }
     if err != nil {
-        return nil, log.Fatal("Could not update user from the database: %s", err)
+        return err
     }
 	return err
 }
@@ -116,10 +99,10 @@ func (r UserImpl) UpdateBulk(users []*pb.User) error {
 	res, err := r.DB.Model(&users).Column("username", "email", "password", "phone").WherePK().Update()
 
     if res.RowsAffected() == 0 {
-        return nil, log.Fatal("Could not update users: not found")
+        log.Fatal("Could not update users: not found")
     }
     if err != nil {
-        return nil, log.Fatal("Could not update users from the database: %s", err)
+        return err
     }
 	return err
 }
