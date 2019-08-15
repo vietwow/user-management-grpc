@@ -27,7 +27,7 @@ import (
     "github.com/vietwow/user-management-grpc/pkg/logger"
     "github.com/vietwow/user-management-grpc/pkg/protocol/grpc/middleware"
 
-    "github.com/vietwow/user-management-grpc/user-management-grpc/server/repository"
+    "github.com/vietwow/user-management-grpc/server/repository"
 
     uuid "github.com/satori/go.uuid"
 )
